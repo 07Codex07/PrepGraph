@@ -6,32 +6,50 @@ It supports document-based RAG (PDF, PPTX) and comes with a Gradio frontend for 
 -----------✨ Features------------
 
 🔗 LangGraph pipeline with retrieval + chat nodes
+
 📄 RAG support → Upload PDFs / PPTX → indexed with FAISS
+
 🤖 Groq LLaMA 3 model as the LLM backend
+
 🧠 Context-aware replies (remembers last 2 user messages)
+
 🎨 Gradio Web App → clean, interactive chatbot UI
+
 ⚡ Lightweight & secure → .env ignored by Git
+
 📊 Easily extensible → can be deployed on Hugging Face Spaces
 
 -----------📊 Example Use Case-------
 
 📚 Students → Ask questions directly from lecture slides / PDFs
+
 💼 Professionals → Summarize reports and query project docs
+
 🤖 AI learners → Understand LangGraph pipelines through an end-to-end example
 
 -------------🔍 How It Works (Architecture)----------
 
 Document Ingestion → PDFs / PPTX loaded via LangChain loaders
+
 Indexing → Text chunks embedded + stored in FAISS vector DB
+
 Graph Execution (LangGraph) →
+
 Retrieval Node (fetch relevant context)
+
 Chat Node (Groq LLaMA 3 generates response)
+
 Conversation Context → Keeps last 2 user messages for coherence
+
 Frontend → Gradio-based chatbot interface
+
+
 
 [User Query in Gradio] → [LangGraph Pipeline] → [Retriever + FAISS] → [Groq LLaMA 3] → [Response in Gradio]
 
-📂 Project Structure
+
+
+----------📂 Project Structure--------
 Chatbot/
 │── app.py           # Gradio frontend
 │── chatbot.py       # Chatbot logic (LangGraph pipeline)
@@ -40,28 +58,44 @@ Chatbot/
 ------🛠️ Requirements--------
 
 Python 3.10+
+
+
 LangChain
+
 LangGraph
+
 Groq API
+
 FAISS
+
 Gradio
-⚙️ Setup
+
+-----------⚙️ Setup-------
+
 1. Clone repo
+
 git clone https://github.com/07Codex07/PrepGraph.git
+
 cd PrepGraph
 
 2. Create virtual env & install deps
+
 python -m venv myenv
+
 myenv\Scripts\activate   # (Windows)
+
 # OR
+
 source myenv/bin/activate   # (Linux/Mac)
 
 pip install -r requirements.txt
 
 3. Create .env file
+
 GROQ_API_KEY=your_groq_api_key_here
 
 4. Run the Gradio app
+
 python app.py
 
 
@@ -70,7 +104,9 @@ Then open the Gradio link (usually http://127.0.0.1:7860/) in your browser.
 -------------🧪 Demo Queries-------------
 
 Q: Summarize this uploaded PDF in 3 bullet points.
+
 Q: What are the important questions from the pyqs of computer network?
+
 Q: Based on the last 2 chats, suggest a follow-up question.
 
 📸 Screenshots
