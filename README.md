@@ -50,10 +50,7 @@ Frontend → Gradio-based chatbot interface
 
 
 ----------📂 Project Structure--------
-Chatbot/
-│── app.py           # Gradio frontend
-│── chatbot.py       # Chatbot logic (LangGraph pipeline)
-│── README.md        # Project docs
+<img width="502" height="119" alt="image" src="https://github.com/user-attachments/assets/4476512c-e386-4f47-b206-a4b721a15619" />
 
 ------🛠️ Requirements--------
 
