@@ -1,108 +1,96 @@
-project:
-  name: "PrepGraph"
-  subtitle: "AI Chatbot with LangGraph + Hybrid RAG Memory"
-  description: >
-    PrepGraph is an AI-powered Retrieval-Augmented Generation (RAG) chatbot built using LangGraph, LangChain, FAISS, and Groq’s LLaMA-3.
-    It understands your uploaded PDFs and PPTX files, retrieves the most relevant context, and chats naturally — 
-    all while remembering your previous messages with persistent memory.
+# ⚡ PrepGraph — AI Chatbot with LangGraph + Hybrid RAG Memory
 
-status:
-  backend: "✅ Fully functional"
-  frontend: "🚧 In progress (UI integration ongoing)"
-  deployment: "🚀 Will be deployed once frontend workflow is complete"
+PrepGraph is an **AI-powered RAG chatbot** built with **LangGraph, LangChain, FAISS, and Groq’s LLaMA-3**.  
+It’s designed to **understand your uploaded PDFs/PPTX**, retrieve the most relevant context, and chat naturally — while remembering your past messages.  
 
-features:
-  - title: "🧠 Smart Conversational Memory"
-    points:
-      - "Each user gets their own persistent memory powered by SQLite"
-      - "Remembers past messages and maintains coherent context"
-      - "Local storage — no external database required"
-  - title: "🔍 Hybrid RAG Retrieval"
-    points:
-      - "Combines BM25 (keyword-based) and FAISS (semantic embeddings)"
-      - "Embeddings powered by SentenceTransformers"
-      - "Supports PDFs and PPTX — great for lecture slides or reports"
-      - "Detects subject (e.g., CN, DOS, SE) for more accurate retrieval"
-  - title: "🤖 Groq LLaMA-3 Backend"
-    points:
-      - "Runs on Groq’s ultra-fast inference platform"
-      - "Context-aware, structured, and concise answers"
-      - "Uses robust response parsing and hallucination prevention"
-  - title: "💬 Gradio Chat Interface"
-    points:
-      - "Clean and minimal chat UI"
-      - "Automatically loads previous chat history"
-      - "Includes clear input + one-click ‘Clear Chat’ button"
-      - "Memory persists even after backend restart"
-  - title: "⚙️ Developer Friendly"
-    points:
-      - "Separable modules for Memory, Retriever, and Graph logic"
-      - "Cached FAISS + BM25 for instant reloads"
-      - "Environment-driven configuration (.env)"
-      - "Structured logging for production"
+---
 
-architecture:
-  overview: |
-    User Query → Memory (SQLite)
-                ↓
-         Retriever Node
-      (BM25 + FAISS Hybrid)
-                ↓
-           Context Chunk
-                ↓
-            LLaMA-3 (Groq)
-                ↓
-         Answer + Memory Save
-                ↓
-            Gradio Chat UI
+## ✨ What Makes It Special
 
-project_structure:
-  - "chatbot_graph.py        # Main Gradio app (UI + LangGraph)"
-  - "chatbot_retriever.py    # Hybrid retriever (FAISS + BM25)"
-  - "memory_store.py         # SQLite-based persistent message memory"
-  - "data/                   # Folder for PDFs and PPTX files"
-  - ".env                    # Stores API keys and configuration"
-  - "requirements.txt"
+### 🧠 Smart Conversational Memory
+- Each user has their own **persistent chat memory (SQLite-based)**  
+- Remembers your last messages and maintains context automatically  
+- Memory stored locally — no external database required  
 
-use_cases:
-  - "📚 Students → Ask questions directly from lecture notes or slides"
-  - "💼 Professionals → Query or summarize project reports instantly"
-  - "🤖 AI Enthusiasts → Learn LangGraph + RAG architecture in action"
+### 🔍 Hybrid RAG Retrieval
+- Combines **BM25 (keyword search)** + **FAISS (semantic embeddings)**  
+- Embeddings generated using **SentenceTransformers**  
+- Supports **both PDFs and PPTX** — ideal for lecture slides, project docs, or reports  
+- Intelligent subject detection (CN, DOS, SE, etc.) for improved retrieval accuracy  
 
-setup_instructions:
-  steps:
-    - "1️⃣ Clone repository"
-    - "```bash\ngit clone https://github.com/07Codex07/PrepGraph.git\ncd PrepGraph\n```"
-    - "2️⃣ Create and activate virtual environment"
-    - "```bash\npython -m venv myenv\nsource myenv/bin/activate  # or myenv\\Scripts\\activate (Windows)\n```"
-    - "3️⃣ Install dependencies"
-    - "```bash\npip install -r requirements.txt\n```"
-    - "4️⃣ Add your Groq API key"
-    - "```bash\necho \"GROQ_API_KEY=your_key_here\" > .env\n```"
-    - "5️⃣ Run the app"
-    - "```bash\npython chatbot_graph.py\n```"
-    - "Visit http://127.0.0.1:7860 to start chatting!"
+### 🤖 Groq LLaMA-3 Backend
+- Powered by **Groq’s ultra-fast inference**  
+- Context-aware and concise responses with safe fallback extraction  
+- Strictly follows provided document context to avoid hallucination  
 
-screenshots:
-📸 Screenshots
-<img width="1906" height="957" alt="Screenshot 1" src="https://github.com/user-attachments/assets/6a375518-536b-4dbf-b4e2-f6c79485fa03" /> <img width="1918" height="979" alt="Screenshot 2" src="https://github.com/user-attachments/assets/32b7780d-9a7a-417d-87f0-8a88d6a71983" /> <img width="1919" height="978" alt="Screenshot 3" src="https://github.com/user-attachments/assets/161bfacc-d212-431e-9cb9-b4d450eae5a1" />
+### 💬 Gradio Chat Interface
+- Clean, responsive Gradio UI (minimal design)  
+- Automatically loads your previous conversations  
+- Includes “Send” + “Clear Chat” buttons for smooth interaction  
+- Works even if backend restarts — chat memory persists!  
+
+### ⚙️ Engineered for Developers
+- Modular architecture: **Retriever**, **Memory**, and **Graph** layers separated  
+- Cached **FAISS + BM25** indexes for lightning-fast reloads  
+- `.env`-driven configuration for flexible environment setup  
+- Structured logging and fault-tolerant persistence  
+- Fully compatible with **Hugging Face Spaces** deployment  
+
+---
+
+## 🧩 Architecture Overview
+
+```text
+User Query → Memory (SQLite)
+          ↓
+      Retriever Node
+     (BM25 + FAISS Hybrid)
+          ↓
+     Context Chunk
+          ↓
+      LLaMA-3 (Groq)
+          ↓
+    Answer + Memory Save
+          ↓
+     Gradio Chat UI
+```
+
+├── chatbot_graph.py        # Main Gradio app (UI + LangGraph)
+├── chatbot_retriever.py    # Hybrid retriever (FAISS + BM25)
+├── memory_store.py         # SQLite-based persistent memory
+├── data/                   # Upload PDFs / PPTX here
+├── .env                    # API keys and environment configs
+└── requirements.txt
 
 
-future_plans:
-  - "📝 Add DOCX and TXT file support"
-  - "🎨 Themed Gradio UI + file upload preview"
-  - "🧩 Extend memory window beyond last 3 messages"
-  - "☁️ Deploy on Hugging Face Spaces or Vercel"
-  - "📊 Integrate analytics and user tracking"
+# 1️⃣ Clone the repository
+git clone https://github.com/07Codex07/PrepGraph.git
+cd PrepGraph
 
-contributing:
-  guidelines: >
-    Pull requests are welcome!  
-    For major changes, please open an issue first to discuss your ideas before implementing them.
+# 2️⃣ Create and activate virtual environment
+python -m venv myenv
+source myenv/bin/activate        # or myenv\Scripts\activate (Windows)
 
-credits:
-  author: "Vinayak Sahu"
-  github: "https://github.com/07Codex07"
-  quote: "PrepGraph — where context meets intelligence."
+# 3️⃣ Install dependencies
+pip install -r requirements.txt
 
-⚡ Built with by Vinayak
+# 4️⃣ Add your Groq API key
+echo "GROQ_API_KEY=your_groq_api_key_here" > .env
+
+# 5️⃣ Run the app
+python chatbot_graph.py
+
+
+🖼️ Screenshots
+
+Chat UI	Document Context Retrieval	Response Generation
+<img width="600" src="https://github.com/user-attachments/assets/6a375518-536b-4dbf-b4e2-f6c79485fa03">	<img width="600" src="https://github.com/user-attachments/assets/32b7780d-9a7a-417d-87f0-8a88d6a71983">	<img width="600" src="https://github.com/user-attachments/assets/161bfacc-d212-431e-9cb9-b4d450eae5a1">
+
+
+🚀 Project Status
+
+- Backend: Fully functional — LangGraph, Groq, FAISS, BM25, and SQLite memory integrated.
+- Frontend: In progress — UI work ongoing (will connect to backend via Gradio/Bolt).
+- Deployment: Will be deployed once frontend workflow is ready.
+
+Built by Vinayak Sahu
