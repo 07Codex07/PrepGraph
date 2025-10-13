@@ -1,0 +1,10 @@
+langchain
+langchain-community
+langchain-groq
+sentence-transformers
+faiss-cpu
+pypdf
+unstructured
+python-dotenv
+gradio
+sqlite3-binary
