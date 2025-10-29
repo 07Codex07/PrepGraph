@@ -5,7 +5,8 @@ import traceback
 from typing import Optional, List, Dict, Any
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks, UploadFile, File, Form
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import uvicorn
 
@@ -252,6 +253,21 @@ def chat(req: ChatRequest):
     except Exception as e:
         logger.exception("chat failed: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# Mount static files for frontend
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "frontend", "dist")
+if os.path.exists(FRONTEND_DIR):
+    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        """Serve the React frontend for all non-API routes"""
+        if full_path and not full_path.startswith("api"):
+            file_path = os.path.join(FRONTEND_DIR, full_path)
+            if os.path.exists(file_path) and os.path.isfile(file_path):
+                return FileResponse(file_path)
+        return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
 
 # Run with: uvicorn main_api:app --reload --host 127.0.0.1 --port 8000
