@@ -72,7 +72,7 @@ function App() {
     if (!userId.trim()) return;
 
     try {
-      const response = await fetch('http://localhost:8000/memory/clear', {
+      const response = await fetch('https://bac747c7ada0.ngrok-free.app/memory/clear', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
