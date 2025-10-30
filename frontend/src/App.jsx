@@ -32,7 +32,7 @@ function App() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://bac747c7ada0.ngrok-free.app/chat', {
+      const response = await fetch('http://127.0.0.1:8000/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ function App() {
     if (!userId.trim()) return;
 
     try {
-      const response = await fetch('https://bac747c7ada0.ngrok-free.app/memory/clear', {
+      const response = await fetch('http://127.0.0.1:8000/memory/clear', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
