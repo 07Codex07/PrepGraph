@@ -307,5 +307,6 @@ if os.path.exists(FRONTEND_DIR):
 # Run with: uvicorn main_api:app --reload --host 127.0.0.1 --port 8000
 if __name__ == "__main__":
     import uvicorn
+    import os
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main_api:app", host="0.0.0.0", port=port)
