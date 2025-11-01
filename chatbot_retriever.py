@@ -33,7 +33,7 @@ except Exception:
     except Exception:
         raise ImportError("Please install langchain + langchain-community (or upgrade).")
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
 
 # ---------- Config ----------
