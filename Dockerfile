@@ -31,5 +31,5 @@
     ENV PORT=8000
     
     # Command to run app
-    CMD ["uvicorn", "main_api:app", "--host", "0.0.0.0", "--port", "8000"]
+    CMD ["uvicorn", "main_api:app", "--host", "0.0.0.0", "--port", "$PORT"]
     
