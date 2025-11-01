@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.faiss
+*.pkl
+.ragg_cache/
+faiss_index/
+data/
+.env
+frontend/

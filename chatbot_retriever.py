@@ -399,14 +399,13 @@ def hybrid_retrieve(query: str, subject: Optional[str] = None, top_k: int = TOP_
 
 # ---------- retrieve_node (for reuse) ----------
 def _last_n_user_messages(rows: List[tuple], n: int = 3) -> List[str]:
-    # rows: list of (role, message, created_at) in chronological order
+    """Return only the latest user message for retrieval context."""
     users = [r[1] for r in rows if r[0] == "user"]
-    return users[-n:]
-
+    return users[-n:]  # only keep the last one
 
 def retrieve_node_from_rows(rows: List[tuple], top_k: int = TOP_K_DOCS) -> Dict[str, Any]:
     last_users = _last_n_user_messages(rows, n=3)
-    current_query = last_users[-1] if last_users else ""
+    current_query = " ".join(last_users).strip() if last_users else ""
     if not current_query:
         return {"context": None, "direct": False}
     detected = None

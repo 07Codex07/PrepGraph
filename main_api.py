@@ -3,6 +3,7 @@ import os
 import logging
 import traceback
 from typing import Optional, List, Dict, Any
+import tiktoken
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks, UploadFile, File, Form
 from fastapi.responses import JSONResponse
@@ -19,12 +20,17 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="RAG Chat Backend", version="1.0")
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ⚠️ Allow all for testing; restrict later if needed
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],   # ✅ lowercase 'allow_'
+    allow_headers=["*"],   # ✅ lowercase 'allow_'
 )
 # ------------------------------------------------
 
@@ -34,8 +40,6 @@ load_dotenv()
 logger = logging.getLogger("rag_api")
 logging.basicConfig(level=logging.INFO)
 logger.setLevel(logging.INFO)
-
-app = FastAPI(title="RAG Chat Backend", version="1.0")
 
 # initialize DB now
 init_db()
@@ -79,6 +83,17 @@ def ensure_indexes(force_reindex: bool = False):
         logger.exception("Index build/load failed")
         raise
 
+# ===== Token limiter helper =====
+enc = tiktoken.get_encoding("cl100k_base")
+
+def trim_to_token_limit(texts, limit=4000):
+    """Join text chunks until token limit is reached."""
+    joined = ""
+    for t in texts:
+        if len(enc.encode(joined + t)) > limit:
+            break
+        joined += t + "\n"
+    return joined
 
 def extract_history_for_frontend(user_id: str, limit: int = 500):
     return build_gradio_history(user_id)
@@ -209,7 +224,26 @@ def chat(req: ChatRequest):
             context = None
 
         # 5) build system prompt content
-        system_content = SYSTEM_PROMPT + (context or "No context found.")
+        # ===== Combine retrieval context + last 2 user turns =====
+        MAX_TOKENS_CONTEXT = 3000
+        NUM_RECENT_TURNS = 2   # last 2 user + assistant pairs
+
+# Get last few messages (both user + assistant)
+        recent_pairs = rows[-(NUM_RECENT_TURNS * 2):]
+        recent_chat = "\n".join([f"{r[0].upper()}: {r[1]}" for r in recent_pairs])
+
+# Trim context to token-safe limit
+        context_texts = context.split("\n\n") if context else []
+        trimmed_context = trim_to_token_limit(context_texts, limit=MAX_TOKENS_CONTEXT)
+
+# Final system prompt
+        system_content = SYSTEM_PROMPT
+        if trimmed_context:
+            system_content += "\n\n===== RETRIEVED CONTEXT =====\n" + trimmed_context
+
+# Always include recent conversation (to maintain chat flow)
+        system_content += "\n\n===== RECENT CHAT =====\n" + recent_chat
+
         # build prompt messages as list of simple dicts (call_llm expects same message format as in chatbot_graph)
         # chatbot_graph.call_llm expects langchain messages (SystemMessage/HumanMessage) — we built that in original file.
         # create messages as minimal objects that call_llm can accept (we rely on original call_llm).
@@ -217,7 +251,7 @@ def chat(req: ChatRequest):
         prompt_msgs = [SystemMessage(content=system_content)]
 
         # collect last 3 user messages
-        last_users = [r[1] for r in rows if r[0] == "user"][-3:]
+        last_users = [r[1] for r in rows if r[0] == "user"][-1:]
         if not last_users:
             last_users = [req.message]
         for u in last_users:
