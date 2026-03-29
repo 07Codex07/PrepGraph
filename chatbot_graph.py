@@ -136,9 +136,9 @@ def chat_interface(user_input: str, chat_state: List[dict], user_id: str):
     # Build rows to pass to retriever: get last messages from DB (ensures persistence)
     rows = get_last_messages(uid, limit=200)  # chronological order
 
-    # Retrieve context using hybrid retriever (uses last 3 user messages internally)
+    # Retrieve context (prefer current turn, same as API /chat)
     try:
-        retrieved = retrieve_node_from_rows(rows)
+        retrieved = retrieve_node_from_rows(rows, primary_user_message=user_input)
         context = retrieved.get("context")
     except Exception:
         logger.exception("Retriever failed")

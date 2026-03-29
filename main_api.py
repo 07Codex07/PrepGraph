@@ -21,8 +21,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="RAG Chat Backend", version="1.0")
 
-from fastapi.middleware.cors import CORSMiddleware
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -41,6 +39,8 @@ load_dotenv()
 logger = logging.getLogger("rag_api")
 logging.basicConfig(level=logging.INFO)
 logger.setLevel(logging.INFO)
+
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "frontend", "dist")
 
 # initialize DB now
 init_db()
@@ -62,6 +62,10 @@ class ChatResponse(BaseModel):
     history: List[Dict[str, str]]
 
 
+class ClearMemoryRequest(BaseModel):
+    user_id: str
+
+
 class RetrieveResponse(BaseModel):
     query: str
     context: Optional[str]
@@ -79,6 +83,11 @@ def ensure_indexes(force_reindex: bool = False):
         chunks, bm25, tokenized, corpus_texts, faiss_data = build_or_load_indexes(force_reindex=force_reindex)
         INDEXES["built"] = True
         INDEXES["info"] = {"chunks_len": len(chunks) if chunks else 0, "corpus_len": len(corpus_texts) if corpus_texts else 0}
+        logger.info(
+            "indexes: ready chunks=%d corpus_passages=%d",
+            INDEXES["info"]["chunks_len"],
+            INDEXES["info"]["corpus_len"],
+        )
         return INDEXES["info"]
     except Exception:
         logger.exception("Index build/load failed")
@@ -101,6 +110,22 @@ def extract_history_for_frontend(user_id: str, limit: int = 500):
 
 
 # ---------- Routes ----------
+@app.get("/")
+def root():
+    """Serve the React app when built; otherwise show API info."""
+    index_path = os.path.join(FRONTEND_DIR, "index.html")
+    if os.path.isfile(index_path):
+        return FileResponse(index_path)
+    return JSONResponse(
+        {
+            "service": "RAG Chat Backend",
+            "docs": "/docs",
+            "health": "/health",
+            "hint": "Build the UI: cd frontend && npm run build — then reload this page.",
+        }
+    )
+
+
 @app.get("/health")
 def health():
     """Basic health check."""
@@ -178,10 +203,10 @@ def get_history(user_id: str, limit: Optional[int] = 500):
 
 
 @app.post("/memory/clear")
-def clear_memory(user_id: str):
+def clear_memory(payload: ClearMemoryRequest):
     """Clear stored memory for user."""
     try:
-        deleted = clear_user_memory(user_id)
+        deleted = clear_user_memory(payload.user_id.strip())
         return {"status": "ok", "deleted_rows": deleted}
     except Exception as e:
         logger.exception("clear failed")
@@ -216,9 +241,9 @@ def chat(req: ChatRequest):
         except Exception:
             logger.warning("Indexes not built or failed. retriever may return no context.")
 
-        # 4) run retrieve_node_from_rows to get context (keeps same logic as your retriever glue)
+        # 4) retrieve using the current user message (same intent as GET /retrieve?query=...)
         try:
-            retrieved = retrieve_node_from_rows(rows)
+            retrieved = retrieve_node_from_rows(rows, primary_user_message=req.message)
             context = retrieved.get("context")
         except Exception:
             logger.exception("retriever call failed")
@@ -236,6 +261,17 @@ def chat(req: ChatRequest):
 # Trim context to token-safe limit
         context_texts = context.split("\n\n") if context else []
         trimmed_context = trim_to_token_limit(context_texts, limit=MAX_TOKENS_CONTEXT)
+        raw_ctx_len = len(context) if context else 0
+        trim_ctx_len = len(trimmed_context) if trimmed_context else 0
+        if raw_ctx_len:
+            logger.info(
+                "chat: user=%s retrieval attached raw_chars=%d token_trimmed_chars=%d",
+                uid,
+                raw_ctx_len,
+                trim_ctx_len,
+            )
+        else:
+            logger.info("chat: user=%s retrieval returned no context (LLM runs without RAG passages)", uid)
 
 # Final system prompt
         system_content = SYSTEM_PROMPT
@@ -289,9 +325,8 @@ def chat(req: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Mount static files for frontend
-FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "frontend", "dist")
-if os.path.exists(FRONTEND_DIR):
+# Mount static files for frontend (explicit GET / above serves index.html)
+if os.path.isdir(FRONTEND_DIR) and os.path.isdir(os.path.join(FRONTEND_DIR, "assets")):
     app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")), name="assets")
 
     @app.get("/{full_path:path}")
