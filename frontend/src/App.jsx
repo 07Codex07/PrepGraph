@@ -1,44 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import './App.css';
-import CustomComponent from './components/CustomComponent';
 
 function App() {
-    const [data, setData] = useState([]);
-    const [error, setError] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = React.useState(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetch('/api/data');
-                if (!response.ok) throw new Error('Network response was not ok');
-                const result = await response.json();
-                setData(result);
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchData();
-    }, []);
+  const handleError = (message) => {
+    setError(message);
+    // Add custom animation or transition here
+  };
 
-    const renderContent = () => {
-        if (isLoading) return <div>Loading...</div>;
-        if (error) return <div>Error: {error}</div>;
-        if (data.length === 0) return <div>No data available.</div>;
-        return data.map(item => <CustomComponent key={item.id} item={item} />);
-    };
+  const handleAction = () => {
+    // Example action to trigger error handling
+    // handleError('Some error occurred!');
+  };
 
-    return (
-        <div className="app">
-            <h1>My App</h1>
-            <div className="timestamp">Last Updated: {new Date().toISOString()}</div>
-            <div className="content">
-                {renderContent()}
-            </div>
-        </div>
-    );
+  return (
+    <div className="app-container">
+      <header className="app-header">
+        <h1 className="app-title">Welcome to PrepGraph</h1>
+      </header>
+      <main className="app-main">
+        <button className="app-button" onClick={handleAction}>Click Me</button>
+        {error && <div className="error-message fade-in">{error}</div>}
+      </main>
+    </div>
+  );
 }
 
 export default App;
